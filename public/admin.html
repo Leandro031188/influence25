@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin - Influencers</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-zinc-950 text-zinc-100">
+  <div class="max-w-6xl mx-auto px-6 py-10">
+    <div class="rounded-2xl bg-zinc-900/60 p-8 shadow">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-semibold">Painel Admin</h1>
+          <p class="mt-1 text-zinc-300">Lista de creators qualificados. Export CSV disponível.</p>
+        </div>
+        <a class="text-sm underline text-zinc-200" href="/">Landing</a>
+      </div>
+
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-3">
+        <input id="adminToken" placeholder="ADMIN_TOKEN" class="rounded-xl bg-zinc-950 border border-zinc-800 px-4 py-3 text-sm" />
+        <select id="grade" class="rounded-xl bg-zinc-950 border border-zinc-800 px-4 py-3 text-sm">
+          <option value="">Todas as notas</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+        </select>
+        <input id="city" placeholder="Cidade (opcional)" class="rounded-xl bg-zinc-950 border border-zinc-800 px-4 py-3 text-sm" />
+        <button id="load" class="rounded-xl bg-white text-black font-semibold py-3 text-sm">Carregar</button>
+      </div>
+
+      <div class="mt-4 flex items-center gap-3">
+        <button id="export" class="rounded-lg border border-zinc-700 px-4 py-2 text-sm">Export CSV</button>
+        <div id="msg" class="text-sm text-zinc-300"></div>
+      </div>
+
+      <div class="mt-6 overflow-auto border border-zinc-800 rounded-xl">
+        <table class="min-w-full text-sm">
+          <thead class="bg-zinc-900">
+            <tr class="text-left">
+              <th class="p-3">Nome</th>
+              <th class="p-3">Email</th>
+              <th class="p-3">Cidade</th>
+              <th class="p-3">Nicho</th>
+              <th class="p-3">Score</th>
+              <th class="p-3">Grade</th>
+              <th class="p-3">Status</th>
+              <th class="p-3">Ação</th>
+            </tr>
+          </thead>
+          <tbody id="rows" class="divide-y divide-zinc-800"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<script>
+const el = (id)=>document.getElementById(id);
+const msg = el('msg');
+
+function row(r){
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="p-3">${r.full_name||''}</td>
+    <td class="p-3">${r.email||''}</td>
+    <td class="p-3">${r.city||''}</td>
+    <td class="p-3">${r.primary_niche||''}</td>
+    <td class="p-3">${r.score_total||''}</td>
+    <td class="p-3">${r.grade||''}</td>
+    <td class="p-3">${r.status||''}</td>
+    <td class="p-3"><a class="underline" href="/dashboard.html?creator_id=${encodeURIComponent(r.id)}" target="_blank">Ver</a></td>
+  `;
+  return tr;
+}
+
+async function load(){
+  msg.textContent='Carregando...';
+  const token = el('adminToken').value.trim();
+  const grade = el('grade').value;
+  const city = el('city').value.trim();
+  const qs = new URLSearchParams();
+  if(grade) qs.set('grade', grade);
+  if(city) qs.set('city', city);
+
+  const r = await fetch('/api/admin/creators?'+qs.toString(), { headers:{'x-admin-token': token} });
+  const j = await r.json();
+  if(!r.ok){ msg.textContent='Erro: token inválido ou falha.'; return; }
+  msg.textContent=`Ok. ${j.rows.length} registros.`;
+  const tb = el('rows');
+  tb.innerHTML='';
+  j.rows.forEach(x => tb.appendChild(row(x)));
+}
+
+async function exportCsv(){
+  const token = el('adminToken').value.trim();
+  const r = await fetch('/api/admin/export.csv', { headers:{'x-admin-token': token} });
+  if(!r.ok){ msg.textContent='Erro export.'; return; }
+  const txt = await r.text();
+  const blob = new Blob([txt], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'creators.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+el('load').addEventListener('click', load);
+el('export').addEventListener('click', exportCsv);
+</script>
+</body>
+</html>

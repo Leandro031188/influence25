@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Conectar Instagram</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-zinc-950 text-zinc-100">
+  <div class="max-w-2xl mx-auto px-6 py-10">
+    <div class="rounded-2xl bg-zinc-900/60 p-8 shadow">
+      <h1 class="text-2xl font-semibold">Conectar Instagram</h1>
+      <p class="mt-2 text-zinc-300">Login oficial (Meta). Sem scraping/bots.</p>
+
+      <div class="mt-6 rounded-xl border border-zinc-800 p-4 text-sm text-zinc-300">
+        <div class="font-medium text-zinc-200">O que acontece agora</div>
+        <ol class="list-decimal ml-5 mt-2 space-y-1 text-zinc-300">
+          <li>Você será redirecionado para login oficial</li>
+          <li>Após autorizar, voltará para o dashboard</li>
+          <li>Geramos seu Score + nicho + marcas ideais</li>
+        </ol>
+      </div>
+
+      <button id="btn" class="mt-6 w-full rounded-xl bg-white text-black font-semibold py-3 hover:opacity-90">
+        Conectar via Instagram (oficial)
+      </button>
+
+      <div id="msg" class="mt-3 text-sm text-zinc-300"></div>
+    </div>
+  </div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const creator_id = params.get('creator_id');
+const btn = document.getElementById('btn');
+const msg = document.getElementById('msg');
+
+if (!creator_id) {
+  msg.textContent = 'creator_id ausente. Volte ao cadastro.';
+  btn.disabled = true;
+}
+
+btn.addEventListener('click', () => {
+  window.location.href = `/api/oauth/meta/start?creator_id=${encodeURIComponent(creator_id)}`;
+});
+</script>
+</body>
+</html>

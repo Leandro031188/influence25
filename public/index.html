@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Influencer da Marca</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-zinc-950 text-zinc-100">
+  <div class="max-w-3xl mx-auto px-6 py-10">
+    <div class="rounded-2xl bg-zinc-900/60 p-8 shadow">
+      <h1 class="text-3xl font-semibold">Quero ser influencer da marca</h1>
+      <p class="mt-2 text-zinc-300">Cadastre-se, autorize a checagem e conecte seu Instagram por login oficial.</p>
+
+      <form id="leadForm" class="mt-6 grid grid-cols-1 gap-4">
+        <div>
+          <label class="text-sm text-zinc-300">Nome completo</label>
+          <input name="full_name" required class="mt-1 w-full rounded-xl bg-zinc-950 border border-zinc-800 px-4 py-3" />
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm text-zinc-300">E-mail</label>
+            <input name="email" type="email" required class="mt-1 w-full rounded-xl bg-zinc-950 border border-zinc-800 px-4 py-3" />
+          </div>
+          <div>
+            <label class="text-sm text-zinc-300">WhatsApp</label>
+            <input name="phone" placeholder="+34 ..." class="mt-1 w-full rounded-xl bg-zinc-950 border border-zinc-800 px-4 py-3" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="text-sm text-zinc-300">País</label>
+            <select name="country" class="mt-1 w-full rounded-xl bg-zinc-950 border border-zinc-800 px-4 py-3">
+              <option value="ES">Espanha</option>
+              <option value="PT">Portugal</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm text-zinc-300">Cidade</label>
+            <input name="city" class="mt-1 w-full rounded-xl bg-zinc-950 border border-zinc-800 px-4 py-3" />
+          </div>
+          <div>
+            <label class="text-sm text-zinc-300">Categoria</label>
+            <input name="declared_category" placeholder="Ex.: comida, beleza, fitness..." class="mt-1 w-full rounded-xl bg-zinc-950 border border-zinc-800 px-4 py-3" />
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-zinc-800 p-4">
+          <div class="text-sm text-zinc-200 font-medium">Autorizações</div>
+          <p class="text-xs text-zinc-400 mt-1">Transparência + revogação a qualquer momento. Sem scraping.</p>
+
+          <div class="mt-3 space-y-2 text-sm">
+            <label class="flex items-start gap-3">
+              <input type="checkbox" name="metrics_check" required class="mt-1" />
+              <span>Autorizo checagem automática de métricas para gerar meu Creator Fit Score (obrigatório)</span>
+            </label>
+            <label class="flex items-start gap-3">
+              <input type="checkbox" name="share_with_brands" class="mt-1" />
+              <span>Autorizo compartilhar meu Media Kit e métricas agregadas com marcas parceiras (opcional)</span>
+            </label>
+            <label class="flex items-start gap-3">
+              <input type="checkbox" name="marketing_contact" class="mt-1" />
+              <span>Autorizo contato comercial por e-mail/WhatsApp (opcional)</span>
+            </label>
+          </div>
+        </div>
+
+        <button class="rounded-xl bg-white text-black font-semibold py-3 hover:opacity-90" type="submit">
+          Continuar e conectar Instagram
+        </button>
+
+        <div id="msg" class="text-sm text-zinc-300"></div>
+      </form>
+
+      <div class="mt-6 text-xs text-zinc-500">
+        Ao conectar o Instagram você autoriza o uso de dados mínimos para validação, score e recomendações. Você pode revogar depois.
+      </div>
+    </div>
+  </div>
+
+<script>
+const form = document.getElementById('leadForm');
+const msg = document.getElementById('msg');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  msg.textContent = 'Enviando...';
+
+  const fd = new FormData(form);
+  const payload = {
+    full_name: fd.get('full_name'),
+    email: fd.get('email'),
+    phone: fd.get('phone') || null,
+    country: fd.get('country'),
+    city: fd.get('city') || null,
+    declared_category: fd.get('declared_category') || null,
+    consents: {
+      metrics_check: !!fd.get('metrics_check'),
+      share_with_brands: !!fd.get('share_with_brands'),
+      marketing_contact: !!fd.get('marketing_contact')
+    }
+  };
+
+  try {
+    const r = await fetch('/api/lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error ? JSON.stringify(j.error) : 'Erro');
+    msg.textContent = 'Ok. Redirecionando para conexão do Instagram...';
+    window.location.href = j.next;
+  } catch (err) {
+    msg.textContent = 'Erro: ' + err.message;
+  }
+});
+</script>
+</body>
+</html>

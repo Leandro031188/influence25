@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  influencer-funnel:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./server/.env
+    volumes:
+      - ./server/data.sqlite:/app/server/data.sqlite
