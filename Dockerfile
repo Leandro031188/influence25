@@ -5,7 +5,7 @@ WORKDIR /app
 COPY servidor/package*.json ./servidor/
 RUN cd servidor && npm install --omit=dev
 
-COPY servidor ./servidor
+COPY public ./public
 COPY publico ./publico
 
 ENV NODE_ENV=production
